@@ -1,0 +1,6 @@
+apiVersion: v2
+name: hardened-app
+description: A production-ready Kubernetes Helm chart enforcing security context, RBAC, NetworkPolicies, and HPA.
+type: application
+version: 1.0.0
+appVersion: "1.22.0"

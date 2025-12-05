@@ -1,0 +1,72 @@
+# Production Zero-Trust NetworkPolicies
+# Layer 1: Default-deny all Ingress and Egress in production namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: production
+  labels:
+    security.policy: zero-trust
+    app.kubernetes.io/managed-by: GitOps
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# Layer 2: Least-privilege ingress and egress rules for hardened-app
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hardened-app-network-policy
+  namespace: production
+  labels:
+    security.policy: least-privilege
+    app.kubernetes.io/managed-by: GitOps
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: hardened-app
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow incoming traffic only from authorized frontend workloads or ingress controller
+    - from:
+        - podSelector:
+            matchLabels:
+              role: frontend
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    # 1. Allow cluster DNS resolution (UDP/TCP 53)
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # 2. Allow egress to authorized PostgreSQL database service
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    # 3. Allow egress to Redis cache service
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379

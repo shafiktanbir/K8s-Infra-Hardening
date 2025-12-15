@@ -1,0 +1,62 @@
+name: "Kubernetes Hardening CI/CD Pipeline"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-validate:
+    name: "Helm Lint & Schema Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Helm v3
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Helm Lint
+        run: |
+          helm lint helm/app-chart
+
+      - name: Helm Template Dry Run
+        run: |
+          helm template test-release helm/app-chart --dry-run=client
+
+  security-scan:
+    name: "Trivy Vulnerability & Security Scanner"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "config"
+          scan-ref: "helm/app-chart"
+          format: "table"
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: "CRITICAL,HIGH"
+
+  go-diagnostics:
+    name: "Test Pod Hygiene Diagnostic Tool"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Run Diagnostics Tests
+        working-directory: diagnostics/pod-hygiene-cli
+        run: |
+          go test -v ./...

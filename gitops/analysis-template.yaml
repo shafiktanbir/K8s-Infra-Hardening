@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: prom-canary-analysis
+  namespace: production
+  labels:
+    app.kubernetes.io/part-of: hardened-platform
+    app.kubernetes.io/managed-by: gitops
+spec:
+  args:
+    - name: service-name
+      value: hardened-app
+  metrics:
+    # Metric 1: HTTP 5xx Error Rate (< 0.5%)
+    - name: http-error-rate
+      interval: 30s
+      count: 5
+      failureLimit: 1
+      successCondition: result[0] < 0.5
+      provider:
+        prometheus:
+          address: http://prometheus-k8s.monitoring.svc.cluster.local:9090
+          query: |
+            (
+              sum(rate(http_requests_total{status=~"5.*",app="{{args.service-name}}"}[2m]))
+              /
+              (sum(rate(http_requests_total{app="{{args.service-name}}"}[2m])) + 0.00001)
+            ) * 100
+
+    # Metric 2: P95 Request Latency (< 100ms / 0.10s)
+    - name: p95-latency
+      interval: 30s
+      count: 5
+      failureLimit: 1
+      successCondition: result[0] < 0.1
+      provider:
+        prometheus:
+          address: http://prometheus-k8s.monitoring.svc.cluster.local:9090
+          query: |
+            histogram_quantile(
+              0.95,
+              sum(rate(http_request_duration_seconds_bucket{app="{{args.service-name}}"}[2m])) by (le)
+            )

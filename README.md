@@ -16,21 +16,21 @@
 
 ```mermaid
 graph TD
-    Developer[Developer Commit] -->|Git Push| GitHub[GitHub Repository]
-    GitHub -->|Trigger CI| GHAction[GitHub Actions / Trivy CVE Scan / Helm Lint]
+    Developer["Developer Commit"] -->|Git Push| GitHub["GitHub Repository"]
+    GitHub -->|Trigger CI| GHAction["GitHub Actions / Trivy CVE Scan / Helm Lint"]
     
-    subgraph Kubernetes Cluster (EKS / K3s)
-        ArgoCD[ArgoCD GitOps Controller] -->|Sync Manifests| AppChart[Hardened Helm Chart]
-        Rollout[Argo Rollout Controller] -->|Canary 20% -> 50% -> 100%| Pods[Rootless Pods UID 10001]
+    subgraph K8s_Cluster ["Kubernetes Cluster (EKS / K3s)"]
+        ArgoCD["ArgoCD GitOps Controller"] -->|Sync Manifests| AppChart["Hardened Helm Chart"]
+        Rollout["Argo Rollout Controller"] -->|Progressive Canary Promo| Pods["Rootless Pods (UID 10001)"]
         
-        Analysis[AnalysisTemplate] -->|Query Error Rate & Latency| Prometheus[Prometheus Metrics]
+        Analysis["AnalysisTemplate"] -->|Query Error Rate & Latency| Prometheus["Prometheus Metrics"]
         Prometheus -->|Success / Abort Signal| Rollout
 
-        Kyverno[Kyverno Policy Engine] -->|Enforce Admission| Pods
-        NetPol[NetworkPolicy Default Deny] -->|Isolate Traffic| Pods
-        HPA[Horizontal Pod Autoscaler] -->|Target 75% CPU/Mem| Pods
+        Kyverno["Kyverno Policy Engine"] -->|Enforce Admission| Pods
+        NetPol["NetworkPolicy Default Deny"] -->|Isolate Traffic| Pods
+        HPA["Horizontal Pod Autoscaler"] -->|Target 75% CPU/Mem| Pods
         
-        Cron[Pod Hygiene CronJob] -->|Periodic Clean| HyCli[Pod Hygiene CLI]
+        Cron["Pod Hygiene CronJob"] -->|Periodic Clean| HyCli["Pod Hygiene CLI"]
         HyCli -->|Reap Evicted & CrashLoopBackOff| Pods
     end
 

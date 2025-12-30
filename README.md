@@ -1,3 +1,6 @@
+> 💡 **Available for Technical Consulting & High-Concurrency Architecture Audits:**  
+> [Book a 20-min System Teardown](https://shafiktanbir.com/?tab=book) · [Explore Full Case Studies](https://shafiktanbir.com)
+
 # ☁️ K8s-Infra-Hardening — Production Cluster, GitOps Pipeline & SRE Automations
 
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.31-blue.svg)](https://kubernetes.io)
@@ -106,3 +109,9 @@ kubectl apply -f security/network-policy.yaml
 # 5. Schedule Automated Pod Hygiene CronJob
 kubectl apply -f gitops/pod-hygiene-cronjob.yaml
 ```
+
+---
+
+> 💡 **Available for Technical Consulting & High-Concurrency Architecture Audits:**  
+> [Book a 20-min System Teardown](https://shafiktanbir.com/?tab=book) · [Explore Full Case Studies](https://shafiktanbir.com)
+

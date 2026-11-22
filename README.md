@@ -1,6 +1,3 @@
-> 💡 **Available for Technical Consulting & High-Concurrency Architecture Audits:**  
-> [Book a 20-min System Teardown](https://shafiktanbir.com/?tab=book) · [Explore Full Case Studies](https://shafiktanbir.com)
-
 # ☁️ K8s-Infra-Hardening — Production Cluster, GitOps Pipeline & SRE Automations
 
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.31-blue.svg)](https://kubernetes.io)
@@ -9,9 +6,11 @@
 [![Helm](https://img.shields.io/badge/Helm-v3.14-navy.svg)](https://helm.sh)
 [![Kyverno](https://img.shields.io/badge/Kyverno-v1.12-purple.svg)](https://kyverno.io)
 [![Trivy](https://img.shields.io/badge/Trivy-CVE--Scan-green.svg)](https://trivy.dev)
-[![Go Tests](https://img.shields.io/badge/Go_Tests-100%25_Passing-brightgreen.svg)](https://golang.org)
+[![Go Tests](https://img.shields.io/badge/Go_Tests-Passing-brightgreen.svg)](https://github.com/shafiktanbir/K8s-Infra-Hardening/actions)
 
-> Production-grade Kubernetes infrastructure blueprint enforcing declarative GitOps releases, progressive canary rollouts with automated Prometheus metric analysis, rootless container execution, zero-trust NetworkPolicies, Kyverno admission controls, automated pod hygiene diagnostics, and resource request rightsizing (35% cloud compute cost reduction).
+**What This System Solves:** Rolls out new software releases gradually and automatically aborts or blocks misconfigured containers before they cause customer downtime.
+
+> Production-grade Kubernetes infrastructure blueprint enforcing declarative GitOps releases, progressive canary rollouts with automated Prometheus metric analysis, rootless container execution (`nginxinc/nginx-unprivileged`), zero-trust NetworkPolicies, Kyverno admission controls, automated pod hygiene diagnostics, and resource request rightsizing.
 
 ---
 
@@ -34,7 +33,7 @@ graph TD
         HPA["Horizontal Pod Autoscaler"] -->|Target 75% CPU/Mem| Pods
         
         Cron["Pod Hygiene CronJob"] -->|Periodic Clean| HyCli["Pod Hygiene CLI"]
-        HyCli -->|Reap Evicted & CrashLoopBackOff| Pods
+        HyCli -->|Reap Evicted & Failed| Pods
     end
 
     GitHub -.->|Declarative Sync| ArgoCD
@@ -47,11 +46,11 @@ graph TD
 | Security & Reliability Layer | Configuration | Business & Engineering Outcome |
 | --- | --- | --- |
 | **Container Hardening** | `runAsNonRoot: true`, `runAsUser: 10001`, `readOnlyRootFilesystem: true`, `allowPrivilegeEscalation: false`, drop `ALL` capabilities | Prevents host breakout, privilege escalation, and root-level persistent tampering. |
-| **Admission Governance** | Kyverno policies (`disallow-root-user`, `require-ro-rootfs`, `require-resource-limits`) | Blocks non-compliant deployments at the admission webhook boundary before scheduling. |
+| **Admission Governance** | Kyverno policies (`require-run-as-non-root`, `disallow-privilege-escalation`, `require-ro-rootfs`, `disallow-default-namespace`) | Blocks non-compliant deployments at the admission webhook boundary before scheduling. |
 | **Zero-Trust Network Isolation** | Default-deny `NetworkPolicy` with whitelist ingress strictly for authorized API gateways | Prevents lateral movement in the event of pod compromise. |
 | **Canary Progressive Delivery** | Argo Rollouts + `AnalysisTemplate` checking `http_requests_total{status=~"5.*"}` | Eliminates deployment downtime and auto-aborts releases if error rate exceeds 1%. |
-| **Automated Pod Hygiene** | Go-based Kubernetes client CLI running as a daily CronJob | Cleans up zombie, Evicted, and high-frequency CrashLoopBackOff pods to prevent node capacity leakage. |
-| **Compute Cost Optimization** | Tuned CPU/Memory requests & HPA scaling at 75% CPU target | Eliminates over-provisioning, reducing monthly cluster node footprint by **35%**. |
+| **Automated Pod Hygiene** | Go-based Kubernetes client CLI (`--namespace`, `--dry-run`) running as a CronJob | Identifies unhealthy pods (`Evicted`, `Failed`, `CrashLoopBackOff`, `ImagePullBackOff`) and cleans evicted/failed pods when `--dry-run=false`. |
+| **Compute Cost Optimization** | Tuned CPU/Memory requests & HPA scaling at 75% CPU target | Prevents over-provisioned scheduling headroom and idle compute spend. |
 
 ---
 
@@ -109,9 +108,4 @@ kubectl apply -f security/network-policy.yaml
 # 5. Schedule Automated Pod Hygiene CronJob
 kubectl apply -f gitops/pod-hygiene-cronjob.yaml
 ```
-
----
-
-> 💡 **Available for Technical Consulting & High-Concurrency Architecture Audits:**  
-> [Book a 20-min System Teardown](https://shafiktanbir.com/?tab=book) · [Explore Full Case Studies](https://shafiktanbir.com)
 

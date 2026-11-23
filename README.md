@@ -6,7 +6,7 @@
 [![Helm](https://img.shields.io/badge/Helm-v3.14-navy.svg)](https://helm.sh)
 [![Kyverno](https://img.shields.io/badge/Kyverno-v1.12-purple.svg)](https://kyverno.io)
 [![Trivy](https://img.shields.io/badge/Trivy-CVE--Scan-green.svg)](https://trivy.dev)
-[![Go Tests](https://img.shields.io/badge/Go_Tests-Passing-brightgreen.svg)](https://github.com/shafiktanbir/K8s-Infra-Hardening/actions)
+[![K8s Hardening CI](https://github.com/shafiktanbir/K8s-Infra-Hardening/actions/workflows/ci-cd-k8s.yml/badge.svg)](https://github.com/shafiktanbir/K8s-Infra-Hardening/actions/workflows/ci-cd-k8s.yml)
 
 **What This System Solves:** Rolls out new software releases gradually and automatically aborts or blocks misconfigured containers before they cause customer downtime.
 
